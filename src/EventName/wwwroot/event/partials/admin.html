@@ -1,0 +1,29 @@
+﻿<div>
+    <h2>Add new Person</h2>
+    <div class="well">
+
+        <form novalidate name="addPersonForm" ng-submit="addNewPerson()">
+            <div class="form-group">
+            </div>
+            <div class="form-group">
+                <label for="name" class="control-label">First Name</label>
+                <input type="text" id="name" name="name" class="form-control" ng-model="firstName" required/>
+                <span ng-show="addPersonForm.name.$error.required" class="text-warning">First name is required</span>
+            </div>
+            <div class="form-group">
+                <label for="lname" class="control-label">Last Name</label>
+                <input type="text" id="lname" name="lname" class="form-control" ng-model="lastName" required/>
+                <span ng-show="addPersonForm.lname.$error.required" class="text-warning">Last name is required</span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Add Person" class="btn btn-primary" ng-disabled="addPersonForm.$invalid" />
+            </div>
+            <hr />
+            <div class="form-group">
+                <input type="button" value="Clean list [delete all data from db]" class="btn btn-danger" ng-click="cleanList()" />
+                <a class="btn btn-primary pull-right" href="#/eventName">Go to list</a>
+            </div>
+        </form>
+
+    </div>
+</div>
