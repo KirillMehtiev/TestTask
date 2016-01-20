@@ -1,5 +1,6 @@
 ﻿<div>
-    <a href="/#admin">Admin panel</a>
+    <br />
+    <a href="/#admin" class="btn btn-default pull-right">Admin panel</a>
     <h2>People invited to EventName</h2>
 
     <hr />
@@ -31,7 +32,7 @@
         </thead>
         <tbody>
             <tr ng-repeat="person in humans | personFilter: searchText:selectFilter.mode" id="row{{ person.id }}" ng-class="{success: person.isHere}">
-                <td> {{ person.id }}</td>
+                <td> {{ $index + 1 }}</td>
                 <td> {{ person.firstName }}</td>
                 <td> {{ person.lastName }} </td>
                 <td> <input type="button" value="{{person.isHere ? 'Cansel' : 'Checkin'}}" class="btn btn-sm btn-primary" id="btn{{ person.id }}" ng-click="checkin(person)" /> </td>

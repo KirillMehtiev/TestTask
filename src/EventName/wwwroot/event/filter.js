@@ -3,7 +3,7 @@
 eventApp.filter("personFilter", function () {
     return function (people, textSearch, filter) {
 
-        // todo: rewrite into single loop |filterByMode,filterByFullName|
+        // todo: rewrite into single loop |filterByMode + filterByFullName|
         var filterByMode = function (list, filter) {
             var listToBack = [];
             for (var i = 0; i < list.length; i++) {

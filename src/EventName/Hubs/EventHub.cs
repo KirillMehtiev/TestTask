@@ -23,7 +23,7 @@ namespace EventName.Hubs
         public void GetData()
         {
             var list = _context.People.ToList<Person>();
-            Clients.Caller.getPeople(list);
+            Clients.Caller.getPeople(list); // caller
         }
         public async void UpdatePerson(Person updPerson)
         {
@@ -35,20 +35,31 @@ namespace EventName.Hubs
 
         public async void AddPerson(string firstName, string lastName)
         {
-            Person person = new Person {
+            Person person = new Person
+            {
                 FirstName = firstName,
                 LastName = lastName,
                 IsHere = false
             };
 
-            //todo add to bd
+            // todo add to bd
             _context.People.Add(person);
             await _context.SaveChangesAsync();
+            
+            // todo triger update on conneted clients
+
         }
 
         public void CleanList()
         {
-            // todo delete all data from db
+            // todo: short-cut change in future
+            foreach (var item in _context.People)
+            {
+                _context.People.Remove(item);
+            }
+
+            _context.SaveChanges();
         }
+
     }
 }

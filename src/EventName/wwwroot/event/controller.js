@@ -1,7 +1,7 @@
 ﻿"use strict";
 
-eventApp.controller('eventController', ["$scope","$route",
-    function ($scope,$route) {
+eventApp.controller('eventController', ["$scope", "$rootScope",
+    function ($scope, $rootScope) {
 
         // vars for search 
         $scope.searchText = "";
@@ -15,6 +15,7 @@ eventApp.controller('eventController', ["$scope","$route",
 
         // for loading purpose
         $scope.isBusy = false;
+
         $scope.tableHead = ["#", "First Name", "Last Name", "Chekin"];
         $scope.humans = [];
 
@@ -25,26 +26,35 @@ eventApp.controller('eventController', ["$scope","$route",
         myHub.client.getPeople = function (data) {
             $scope.humans = data;
             $scope.isBusy = true;
-            $scope.$apply();
+            $rootScope.$apply();
         }
 
+        // func handls when server sends person to update
         myHub.client.checkinOthers = function (updPerson) {
             updatePersonLocaly(updPerson, $scope.humans);
         }
 
+        // todo: extract it to service
         $.connection.hub.start({ transport: ['webSockets', 'foreverFrame', 'longPolling'] })
             .done(function () {
                 console.log("created connection myHub Id = " + $.connection.hub.id);
+                // call server-side method
                 myHub.server.getData();
-
+            })
+            .fail(function (error) {
+                console.log("Error: " + error);
             });
 
-        
+        // click ckeckin()
         $scope.checkin = function (person) {
             var updPerson = updatePersonLocaly(person, $scope.humans);
+            // sent to other conneced clients
             myHub.server.updatePerson(updPerson);
         }
 
+        // get person and list of people
+        // find person by id and change his prop (isHere)
+        // return updated person
         var updatePersonLocaly = function (person, mas) {
             var temp = mas;
             for (var i = 0; i < temp.length; i++) {
