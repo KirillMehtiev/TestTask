@@ -32,7 +32,9 @@ namespace EventName
             services.AddMvc();
 
             // Add SignalR services
-            services.AddSignalR();
+            services.AddSignalR(options=> {
+                options.Hubs.EnableDetailedErrors = true;
+            });
 
             // Add EntityFramework
             services.AddEntityFramework()

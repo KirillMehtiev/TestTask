@@ -1,7 +1,25 @@
 ﻿"use strict";
 
-eventApp.controller('eventController', ["$scope", "$rootScope",
-    function ($scope, $rootScope) {
+eventApp.controller('eventController', ["$scope", "$rootScope", "$timeout", "backendHubProxy",
+    function ($scope, $rootScope, $timeout, backendHubProxy) {
+        
+        // start out connection
+        var myHub = backendHubProxy("eventHub", function () {
+            // this func will be executed inside connection.start().done( HERE )
+            myHub.invoke("getData");
+        });
+
+        // for switching
+        $scope.display = true;
+
+        $scope.changeView = function () {
+            if ($scope.display)
+                $scope.display = false;
+            else
+                $scope.display = true;
+        }
+
+        // ---- Main view -----
 
         // vars for search 
         $scope.searchText = "";
@@ -17,40 +35,38 @@ eventApp.controller('eventController', ["$scope", "$rootScope",
         $scope.isBusy = false;
 
         $scope.tableHead = ["#", "First Name", "Last Name", "Chekin"];
-        $scope.humans = [];
-
-        console.log("starting connection");
-        var myHub = $.connection.eventHub;
+        $scope.people = [];
 
         // add client-side method to hub
-        myHub.client.getPeople = function (data) {
-            $scope.humans = data;
+        myHub.on("getPeople", function (data) {
+            $scope.people = data;
             $scope.isBusy = true;
             $rootScope.$apply();
-        }
+        });
 
         // func handls when server sends person to update
-        myHub.client.checkinOthers = function (updPerson) {
-            updatePersonLocaly(updPerson, $scope.humans);
-        }
+        myHub.on("checkinOthers", function (updPerson) {
+            updatePersonLocaly(updPerson, $scope.people);
+        });
 
-        // todo: extract it to service
-        $.connection.hub.start({ transport: ['webSockets', 'foreverFrame', 'longPolling'] })
-            .done(function () {
-                console.log("created connection myHub Id = " + $.connection.hub.id);
-                // call server-side method
-                myHub.server.getData();
-            })
-            .fail(function (error) {
-                console.log("Error: " + error);
-            });
+        // when admin added new person list will be updated on clients
+        myHub.on("addPerson", function (newPerson) {
+            $scope.people.push(newPerson);
+            $rootScope.$apply();
+        })
 
         // click ckeckin()
         $scope.checkin = function (person) {
-            var updPerson = updatePersonLocaly(person, $scope.humans);
-            // sent to other conneced clients
-            myHub.server.updatePerson(updPerson);
+            var updPerson = updatePersonLocaly(person, $scope.people);
+            // sent to other connected clients
+            myHub.invoke("updatePerson", updPerson);
         }
+
+        // add new person to list
+        myHub.on("addPerson", function (person) {
+            $scope.people.push(person);
+            $rootScope.$apply();
+        });
 
         // get person and list of people
         // find person by id and change his prop (isHere)
@@ -72,6 +88,38 @@ eventApp.controller('eventController', ["$scope", "$rootScope",
                     }
                 }
             }
+        }
+
+        // ------ Admin view ------
+
+        // for inputs
+        $scope.firstName;
+        $scope.lastName;
+
+        // for alert purpose
+        $scope.message = "A new person has been added!";
+        $scope.showMessage = false;
+
+        // click add
+        $scope.addNewPerson = function () {
+            // send person to server in order to add it to db
+            myHub.invoke("addPerson", $scope.firstName, $scope.lastName);
+
+            // clean inputs
+            $scope.firstName = "";
+            $scope.lastName = "";
+
+            // show 3 sec and then hide message
+            $scope.showMessage = true;
+            $timeout(function () {
+                $scope.showMessage = false;
+            }, 3000);
+
+        }
+
+        $scope.cleanList = function () {
+            myHub.server.cleanList();
+            alert("Done!")
         }
     }
 ]);

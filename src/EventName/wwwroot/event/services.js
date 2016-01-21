@@ -1,47 +1,34 @@
-﻿"use strict";
+﻿'use strict';
 
-eventApp.factory("backendHubProxy",
-    function () {
-        //console.log("starting connection");
-        //var hub = $.connection.eventHub;
-        //$.connection.hub.start({ transport: ['webSockets', 'foreverFrame', 'longPolling'] })
-        //    .done(function () {
-        //        console.log("created connection");
-        //        return hub;
-        //    });
-        //return hub;
-    }
-);
-//function ($rootScope, backendServerUrl) {
-//    function backendFactory(serverUrl, hubName) {
-//        var connection = $.hubConnection(backendServerUrl);
-//        var proxy = connection.createHubProxy(hubName);
+eventApp.factory('backendHubProxy', ['$rootScope',
+  function ($rootScope) {
 
-//        // use only webSockets and longPolling for transport purpose 
-//        connection.start({ transport: ['webSockets', 'longPolling'] }).done(function () { });
+      function backendFactory(hubName, connectionDone) {
+          var connection = $.hubConnection();
+          var hubProxy = connection.createHubProxy(hubName);
 
-//        return {
-//            on: function (eventName, callback) {
-//                proxy.on(eventName, function (result) {
-//                    $rootScope.$apply(function () {
-//                        if (callback) {
-//                            callback(result);
-//                        }
-//                    });
-//                });
-//            },
-//            invoke: function (methodName, data, callback) {
-//                proxy.invoke(methodName, data)
-//                    .done(function (result) {
-//                        $rootScope.$apply(function () {
-//                            if (callback) {
-//                                callback(result);
-//                            }
-//                        });
-//                    });
-//            }
-//        };
-//    };
+          // to init hub
+          hubProxy.on("test", function () {
 
-//    return backendFactory;
-//}
+          });
+
+          // turn on logging
+          hubProxy.connection.logging = true;
+
+          // start connection
+          console.log("starting connection...")
+          connection.start({ transport: ['webSockets', 'foreverFrame', 'longPolling'] })
+              .done(function () {
+                  console.log("connected " + $.connection.hub.id);
+
+                  if (connectionDone != 'undefined')
+                      connectionDone();
+              }).fail(function (error) {
+                  console.log("Error: " + error);
+              });
+
+          return hubProxy;
+      };
+
+      return backendFactory;
+  }]);

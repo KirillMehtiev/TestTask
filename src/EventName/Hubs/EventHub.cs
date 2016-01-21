@@ -20,15 +20,28 @@ namespace EventName.Hubs
             return base.OnConnected();
         }
 
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            return base.OnDisconnected(stopCalled);
+        }
+
         public void GetData()
         {
-            var list = _context.People.ToList<Person>();
-            Clients.Caller.getPeople(list); // caller
+            try
+            {
+                var list = _context.People.ToList<Person>();
+                Clients.Caller.getPeople(list); // caller
+            }
+            catch { } // todo: show error page
         }
         public async void UpdatePerson(Person updPerson)
         {
-            _context.People.FirstOrDefault(p => p.Id == updPerson.Id).IsHere = updPerson.IsHere;
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.People.FirstOrDefault(p => p.Id == updPerson.Id).IsHere = updPerson.IsHere;
+                await _context.SaveChangesAsync();
+            }
+            catch { }
 
             Clients.Others.checkinOthers(updPerson);
         }
@@ -45,8 +58,9 @@ namespace EventName.Hubs
             // todo add to bd
             _context.People.Add(person);
             await _context.SaveChangesAsync();
-            
+
             // todo triger update on conneted clients
+            Clients.All.addPerson(person);
 
         }
 
